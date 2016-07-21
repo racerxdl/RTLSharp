@@ -5,11 +5,11 @@ using System.Runtime.InteropServices;
 // General Information about an assembly is controlled through the following 
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
-[assembly: AssemblyTitle("RTLSharp")]
+[assembly: AssemblyTitle("RadioComponents")]
 [assembly: AssemblyDescription("")]
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("")]
-[assembly: AssemblyProduct("RTLSharp")]
+[assembly: AssemblyProduct("RadioComponents")]
 [assembly: AssemblyCopyright("Copyright © 2016 - Lucas Teske")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
@@ -20,7 +20,7 @@ using System.Runtime.InteropServices;
 [assembly: ComVisible(false)]
 
 // The following GUID is for the ID of the typelib if this project is exposed to COM
-[assembly: Guid("b6dc209d-1fb4-4a85-ae17-daad56b9f70f")]
+[assembly: Guid("ae80ddb5-b8b0-4f07-979b-ad3aafe6f0f9")]
 
 // Version information for an assembly consists of the following four values:
 //

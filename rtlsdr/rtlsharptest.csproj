@@ -4,11 +4,11 @@
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{B6DC209D-1FB4-4A85-AE17-DAAD56B9F70F}</ProjectGuid>
-    <OutputType>Library</OutputType>
+    <ProjectGuid>{9DAC113D-5D49-48AA-BC06-3BD994E60ACD}</ProjectGuid>
+    <OutputType>WinExe</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>RTLSharp</RootNamespace>
-    <AssemblyName>RTLSharp</AssemblyName>
+    <RootNamespace>rtlsdr</RootNamespace>
+    <AssemblyName>rtlsharptest</AssemblyName>
     <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
   </PropertyGroup>
@@ -22,6 +22,7 @@
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <Prefer32Bit>false</Prefer32Bit>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <PlatformTarget>AnyCPU</PlatformTarget>
@@ -32,9 +33,7 @@
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
-  </PropertyGroup>
-  <PropertyGroup>
-    <StartupObject />
+    <Prefer32Bit>false</Prefer32Bit>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|x86'">
     <DebugSymbols>true</DebugSymbols>
@@ -50,7 +49,7 @@
     <OutputPath>bin\x86\Release\</OutputPath>
     <DefineConstants>TRACE</DefineConstants>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
-    <Optimize>true</Optimize>
+    <Optimize>false</Optimize>
     <DebugType>pdbonly</DebugType>
     <PlatformTarget>x86</PlatformTarget>
     <ErrorReport>prompt</ErrorReport>
@@ -70,39 +69,17 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Callbacks\ManagedCallbacks.cs" />
-    <Compile Include="Callbacks\NativeCallbacks.cs" />
-    <Compile Include="Callbacks\SamplesEventArgs.cs" />
-    <Compile Include="Exceptions\DeviceWorkerAlreadyRunning.cs" />
-    <Compile Include="Exceptions\InvalidArgumentException.cs" />
-    <Compile Include="Exceptions\RTLSharpException.cs" />
-    <Compile Include="Exceptions\SetParametersException.cs" />
-    <Compile Include="Extensions\FFT.cs" />
-    <Compile Include="Extensions\Filters.cs" />
-    <Compile Include="Extensions\Math.cs" />
-    <Compile Include="Extensions\Utils.cs" />
-    <Compile Include="Modules\Decimator.cs" />
-    <Compile Include="Modules\FloatLPF.cs" />
-    <Compile Include="Modules\FMDemodulator.cs" />
-    <Compile Include="Modules\ComplexHPF.cs" />
-    <Compile Include="Modules\InlineFloatDecimator.cs" />
-    <Compile Include="Modules\InlineFloatInterpolator.cs" />
-    <Compile Include="Modules\InlineFloatResampler.cs" />
-    <Compile Include="Modules\ComplexLPF.cs" />
-    <Compile Include="PortAudio\AudioDevice.cs" />
-    <Compile Include="PortAudio\AudioDeviceDirection.cs" />
-    <Compile Include="PortAudio\AudioPlayer.cs" />
-    <Compile Include="PortAudio\PortAudio.cs" />
-    <Compile Include="Types\FloatFifo.cs" />
-    <Compile Include="NativeMethods.cs" />
+    <Compile Include="SharpTest.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="SharpTest.Designer.cs">
+      <DependentUpon>SharpTest.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Types\DataBuffer.cs" />
-    <Compile Include="Types\Complex.cs" />
-    <Compile Include="Types\ComplexFifo.cs" />
-    <Compile Include="Types\Device.cs" />
-    <Compile Include="Types\SamplingMode.cs" />
-    <Compile Include="Types\LockEvent.cs" />
-    <Compile Include="Types\TunerType.cs" />
+    <EmbeddedResource Include="SharpTest.resx">
+      <DependentUpon>SharpTest.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="Properties\Resources.resx">
       <Generator>ResXFileCodeGenerator</Generator>
       <LastGenOutput>Resources.Designer.cs</LastGenOutput>
@@ -126,21 +103,14 @@
     <None Include="App.config" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="librtlsdr\libgcc_s_dw2-1.dll">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="librtlsdr\librtlsdr.dll">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="librtlsdr\libusb-1.0.dll">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="librtlsdr\libwinpthread-1.dll">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="PortAudio\PortAudio.dll">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
+    <ProjectReference Include="..\RadioComponents\RadioComponents.csproj">
+      <Project>{ae80ddb5-b8b0-4f07-979b-ad3aafe6f0f9}</Project>
+      <Name>RadioComponents</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\RTLSharp\RTLSharp.csproj">
+      <Project>{b6dc209d-1fb4-4a85-ae17-daad56b9f70f}</Project>
+      <Name>RTLSharp</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
