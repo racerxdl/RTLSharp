@@ -17,18 +17,15 @@ namespace rtlsdr {
     private DataBuffer powerBuffer;
     private DataBuffer powerBufferDecimator;
     private DataBuffer fftBuffer;
-    private DataBuffer fftDecimatorBuffer;
     private unsafe float* powerPtr;
     private unsafe float* powerDecimatorPtr;
     private unsafe Complex* fftBufferPtr;
-    private unsafe Complex* fftBufferDecimatorPtr;
     private int fftBins = 16384;
     private ComplexFifo _fftStream;
     private ComplexFifo _fftStreamDecimator;
     private DataBuffer audioBuffer;
     private unsafe float* audioPtr;
     private FloatFifo _audioFifo;
-    private object lockObj = new object();
     private float _fftOffset = -40f;
     private Decimator decimator;
     private InlineFloatDecimator audioDecimator;
@@ -36,7 +33,6 @@ namespace rtlsdr {
     private Thread _dspThread;
     private AudioPlayer _audioPlayer;
 
-    private object locker = new object();
     private volatile bool dspHit = true;
 
     private int audioSampleRate = 192000;
@@ -47,23 +43,28 @@ namespace rtlsdr {
 
     private DataBuffer tmpBuffer;
     private unsafe float* tmpBufferPtr;
+    private int audioDeviceIdx = 0;
 
     public unsafe SharpTest() {
       InitializeComponent();
       powerBuffer = DataBuffer.Create(fftBins, sizeof(float));
       powerBufferDecimator = DataBuffer.Create(fftBins, sizeof(float));
       fftBuffer = DataBuffer.Create(fftBins, sizeof(Complex));
-      fftDecimatorBuffer = DataBuffer.Create(fftBins, sizeof(Complex));
 
       powerPtr = (float*)powerBuffer;
       powerDecimatorPtr = (float*)powerBufferDecimator;
       fftBufferPtr = (Complex*)fftBuffer;
-      fftBufferDecimatorPtr = (Complex*)fftDecimatorBuffer;
-
 
       offsetTrackBar.Value = spectrumAnalyzer1.DisplayOffset;
       trackBar3.Value = spectrumAnalyzer1.DisplayRange;
       fmDemod = new FMDemodulator();
+      List<AudioDevice> devices = AudioDevice.GetDevices (AudioDeviceDirection.Output);
+      foreach (AudioDevice d in devices) {
+        if (d.IsDefault) {
+          audioDeviceIdx = d.Index;
+          break;
+        }
+      }
     }
 
     private unsafe void audioBufferNeeded(SamplesEventArgs e) {
@@ -122,7 +123,7 @@ namespace rtlsdr {
       fmLpf = new FloatLPF(audioSampleRate, 22050, 127);
       _audioFifo = new FloatFifo(16 * audioBufferInMs * audioSampleRate / 1000);
       _audioFifo.Open();
-      _audioPlayer = new AudioPlayer(3, audioSampleRate, (uint)(audioBufferInMs * audioSampleRate / 1000), audioBufferNeeded);
+      _audioPlayer = new AudioPlayer(audioDeviceIdx, audioSampleRate, (uint)(audioBufferInMs * audioSampleRate / 1000), audioBufferNeeded);
 
 
       spectrumAnalyzer2.Frequency = d.Frequency;
@@ -148,8 +149,6 @@ namespace rtlsdr {
       float offset = (24f - num7) + _fftOffset;
 
       if (e.IsComplex) {
-
-        int audioLength = (int)(e.Length / audioDecimator.DecimationFactor);
         if (tmpBuffer.Length < e.Length) {
           tmpBuffer = DataBuffer.Create(e.Length, sizeof(float));
           tmpBufferPtr = (float*)tmpBuffer;

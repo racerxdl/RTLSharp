@@ -27,7 +27,7 @@ namespace RTLSharp {
   /// librtlsdr Native Methods
   /// </summary>
   public class NativeMethods {
-    private const string LibRtlSdr = "librtlsdr\\librtlsdr.dll";
+    private const string LibRtlSdr = "librtlsdr";
       [DllImport(LibRtlSdr, CallingConvention = CallingConvention.Cdecl)]
       public static extern int rtlsdr_cancel_async(IntPtr dev);
       [DllImport(LibRtlSdr, CallingConvention = CallingConvention.Cdecl)]
