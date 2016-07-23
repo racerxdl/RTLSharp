@@ -81,7 +81,7 @@ namespace RTLSharp.Types {
       }
       _useTunerAGC = true;
 
-      _supportsOffsetTuning = NativeMethods.rtlsdr_set_offset_tuning(_dev, 0) != -2;
+      _supportsOffsetTuning = NativeMethods.rtlsdr_set_offset_tuning(_dev, false) != -2;
       _supportedGains = new int[tunerGains];
       if (tunerGains >= 0) {
         NativeMethods.rtlsdr_get_tuner_gains(_dev, _supportedGains);
@@ -178,7 +178,7 @@ namespace RTLSharp.Types {
         throw new SetParametersException("Cannot set device center frequency!");
       }
 
-      if (NativeMethods.rtlsdr_set_tuner_gain_mode(_dev, _useTunerAGC ? 0 : 1) != 0) {
+      if (NativeMethods.rtlsdr_set_tuner_gain_mode(_dev, !_useTunerAGC) != 0) {
         throw new SetParametersException("Cannot set Gain Mode");
       }
 
@@ -231,6 +231,7 @@ namespace RTLSharp.Types {
         _centerFrequency = value;
         if (_dev != IntPtr.Zero) {
           NativeMethods.rtlsdr_set_center_freq(_dev, _centerFrequency);
+          _centerFrequency = NativeMethods.rtlsdr_get_center_freq(_dev);
         }
       }
     }
@@ -336,7 +337,7 @@ namespace RTLSharp.Types {
       set {
         _useOffsetTuning = value;
         if (_dev != IntPtr.Zero) {
-          NativeMethods.rtlsdr_set_offset_tuning(_dev, _useOffsetTuning ? 1 : 0);
+          NativeMethods.rtlsdr_set_offset_tuning(_dev, _useOffsetTuning);
         }
       }
     }
@@ -349,7 +350,7 @@ namespace RTLSharp.Types {
       set {
         _useRtlAGC = value;
         if (_dev != IntPtr.Zero) {
-          NativeMethods.rtlsdr_set_agc_mode(_dev, _useRtlAGC ? 1 : 0);
+          NativeMethods.rtlsdr_set_agc_mode(_dev, _useRtlAGC);
         }
       }
     }
@@ -361,7 +362,7 @@ namespace RTLSharp.Types {
       set {
         _useTunerAGC = value;
         if (_dev != IntPtr.Zero) {
-          NativeMethods.rtlsdr_set_tuner_gain_mode(_dev, _useTunerAGC ? 0 : 1);
+          NativeMethods.rtlsdr_set_tuner_gain_mode(_dev, _useTunerAGC);
         }
       }
     }

@@ -5,7 +5,6 @@ using RTLSharp.PortAudio;
 using RTLSharp.Types;
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Threading;
 using System.Windows.Forms;
 
@@ -17,26 +16,21 @@ namespace rtlsdr {
     private DataBuffer powerBuffer;
     private DataBuffer powerBufferDecimator;
     private DataBuffer fftBuffer;
-    private DataBuffer fftDecimatorBuffer;
     private unsafe float* powerPtr;
     private unsafe float* powerDecimatorPtr;
     private unsafe Complex* fftBufferPtr;
-    private unsafe Complex* fftBufferDecimatorPtr;
     private int fftBins = 16384;
     private ComplexFifo _fftStream;
     private ComplexFifo _fftStreamDecimator;
     private DataBuffer audioBuffer;
     private unsafe float* audioPtr;
     private FloatFifo _audioFifo;
-    private object lockObj = new object();
     private float _fftOffset = -40f;
     private Decimator decimator;
     private InlineFloatDecimator audioDecimator;
 
     private Thread _dspThread;
     private AudioPlayer _audioPlayer;
-
-    private object locker = new object();
     private volatile bool dspHit = true;
 
     private int audioSampleRate = 192000;
@@ -47,23 +41,32 @@ namespace rtlsdr {
 
     private DataBuffer tmpBuffer;
     private unsafe float* tmpBufferPtr;
+    private float[] hammingWindow;
+    private FloatLPF fmLpf;
+    private int audioDeviceIdx = 0;
 
     public unsafe SharpTest() {
       InitializeComponent();
       powerBuffer = DataBuffer.Create(fftBins, sizeof(float));
       powerBufferDecimator = DataBuffer.Create(fftBins, sizeof(float));
       fftBuffer = DataBuffer.Create(fftBins, sizeof(Complex));
-      fftDecimatorBuffer = DataBuffer.Create(fftBins, sizeof(Complex));
 
       powerPtr = (float*)powerBuffer;
       powerDecimatorPtr = (float*)powerBufferDecimator;
       fftBufferPtr = (Complex*)fftBuffer;
-      fftBufferDecimatorPtr = (Complex*)fftDecimatorBuffer;
 
+      hammingWindow = Filters.generateHammingWindow(fftBins);
 
       offsetTrackBar.Value = spectrumAnalyzer1.DisplayOffset;
       trackBar3.Value = spectrumAnalyzer1.DisplayRange;
       fmDemod = new FMDemodulator();
+      List<AudioDevice> devices = AudioDevice.GetDevices(AudioDeviceDirection.Output);
+      foreach (AudioDevice d in devices) {
+        if (d.IsDefault) {
+          audioDeviceIdx = d.Index;
+          break;
+        }
+      }
     }
 
     private unsafe void audioBufferNeeded(SamplesEventArgs e) {
@@ -94,7 +97,12 @@ namespace rtlsdr {
     }
 
     private unsafe void updateSpectrum(int length) {
-      spectrumAnalyzer1.RenderSpectrum(powerPtr, length);
+      lock (powerBuffer) {
+        spectrumAnalyzer1.RenderSpectrum(powerPtr, length);
+        if (tmpBuffer != null) {
+          spectrumAnalyzer2.RenderSpectrum(powerDecimatorPtr, tmpBuffer.Length);
+        }
+      }
     }
 
     private unsafe void button1_Click(object sender, EventArgs e) {
@@ -117,12 +125,10 @@ namespace rtlsdr {
       audioSampleRate = (int)((d.SampleRate / decimatorRatio) / decimatorRatio);
       audioBuffer = DataBuffer.Create((audioBufferInMs * audioSampleRate / 1000), sizeof(float));
       audioPtr = (float*)audioBuffer;
-      tmpBuffer = DataBuffer.Create((audioBufferInMs * audioSampleRate / 1000), sizeof(float));
-      tmpBufferPtr = (float*)tmpBuffer;
       fmLpf = new FloatLPF(audioSampleRate, 22050, 127);
       _audioFifo = new FloatFifo(16 * audioBufferInMs * audioSampleRate / 1000);
       _audioFifo.Open();
-      _audioPlayer = new AudioPlayer(3, audioSampleRate, (uint)(audioBufferInMs * audioSampleRate / 1000), audioBufferNeeded);
+      _audioPlayer = new AudioPlayer(audioDeviceIdx, audioSampleRate, (uint)(audioBufferInMs * audioSampleRate / 1000), audioBufferNeeded);
 
 
       spectrumAnalyzer2.Frequency = d.Frequency;
@@ -137,20 +143,18 @@ namespace rtlsdr {
       dspHit = true;
       _dspThread = new Thread(dspWork);
       _dspThread.Start();
+      fftTimer.Enabled = true;
 
       Console.WriteLine("Receiving Samples now.");
     }
 
-    private FloatLPF fmLpf;
-
     private unsafe void Decimator_SamplesAvailable(SamplesEventArgs e) {
-      float num7 = (float)(10.0 * Math.Log10(fftBins / 16.0));
-      float offset = (24f - num7) + _fftOffset;
+      // http://www.designnews.com/author.asp?section_id=1419&doc_id=236273&piddl_msgid=522392
+      float fftGain = (float)(10.0 * Math.Log10(fftBins / (2.0 * audioDecimator.DecimationFactor)));
+      float offset = 24.0f - fftGain + _fftOffset;
 
       if (e.IsComplex) {
-
-        int audioLength = (int)(e.Length / audioDecimator.DecimationFactor);
-        if (tmpBuffer.Length < e.Length) {
+        if (tmpBuffer == null || tmpBuffer.Length < e.Length) {
           tmpBuffer = DataBuffer.Create(e.Length, sizeof(float));
           tmpBufferPtr = (float*)tmpBuffer;
         }
@@ -160,8 +164,9 @@ namespace rtlsdr {
         _audioFifo.Write(tmpBufferPtr, (int)(e.Length / audioDecimator.DecimationFactor));
 
         FFT.ForwardTransform(e.ComplexBuffer, e.Length);
-        FFT.SpectrumPower(e.ComplexBuffer, powerDecimatorPtr, e.Length, offset);
-        spectrumAnalyzer2.RenderSpectrum(powerDecimatorPtr, e.Length);
+        lock (powerBuffer) {
+          FFT.SpectrumPower(e.ComplexBuffer, powerDecimatorPtr, e.Length, offset);
+        }
       }
     }
 
@@ -170,6 +175,8 @@ namespace rtlsdr {
         if (e.IsComplex) {
           _fftStream.Write(e.ComplexBuffer, e.Length);
         }
+      } else {
+        Console.WriteLine("Buffer is full!");
       }
     }
 
@@ -177,18 +184,20 @@ namespace rtlsdr {
       if (_fftStream.Length >= fftBins) {
         int samplesRead = _fftStream.Read(fftBufferPtr, fftBins);
 
-        float bins = (float)(10.0 * Math.Log10(fftBins / 2.0));
-        float offset = (24f - bins) + _fftOffset;
-        decimator.Process(fftBufferPtr, samplesRead);
+        // http://www.designnews.com/author.asp?section_id=1419&doc_id=236273&piddl_msgid=522392
+        float fftGain = (float)(10.0 * Math.Log10(fftBins / 2.0));
+        float offset = 24.0f - fftGain + _fftOffset;
 
+        decimator.Process(fftBufferPtr, samplesRead);
+        if (checkBox1.Checked) {
+          fixed (float* w = hammingWindow)
+          {
+            FFT.ApplyWindow(fftBufferPtr, w, samplesRead);
+          }
+        }
         FFT.ForwardTransform(fftBufferPtr, samplesRead);
-        FFT.SpectrumPower(fftBufferPtr, powerPtr, samplesRead, offset);
-        if (spectrumAnalyzer1.InvokeRequired) {
-          spectrumAnalyzer1.Invoke(new MethodInvoker(() => {
-            updateSpectrum(samplesRead);
-          }));
-        } else {
-          updateSpectrum(samplesRead);
+        lock (powerBuffer) {
+          FFT.SpectrumPower(fftBufferPtr, powerPtr, samplesRead, offset);
         }
       }
     }
@@ -227,7 +236,7 @@ namespace rtlsdr {
       spectrumAnalyzer1.DisplayRange = trackBar3.Value;
       spectrumAnalyzer2.DisplayRange = trackBar3.Value;
     }
-    
+
     private void lnaGain_Scroll(object sender, EventArgs e) {
       if (d != null) {
         d.LNAGain = lnaGain.Value;
@@ -248,12 +257,22 @@ namespace rtlsdr {
 
     private void trackBar5_ValueChanged(object sender, EventArgs e) {
       frequency = (UInt32)trackBar5.Value * 10000;
-      label1.Text = "F: " + frequency;
-      spectrumAnalyzer1.Frequency = frequency;
-      spectrumAnalyzer2.Frequency = frequency;
       if (d != null) {
         d.Frequency = frequency;
+        frequency = d.Frequency;
+        trackBar5.Value = (int)(d.Frequency / 10000);
+        label1.Text = "F: " + d.Frequency;
+        spectrumAnalyzer1.Frequency = d.Frequency;
+        spectrumAnalyzer2.Frequency = d.Frequency;
       }
+    }
+
+    private void checkBox1_CheckedChanged(object sender, EventArgs e) {
+
+    }
+
+    private void fftTimer_Tick(object sender, EventArgs e) {
+      updateSpectrum(fftBins);
     }
   }
 }

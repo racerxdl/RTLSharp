@@ -37,7 +37,6 @@ namespace RadioComponents.Visual {
     private Bitmap _buffer;
     private byte[] _spectrumData;
     private byte[] _spectrumDataMin;
-    private float[] _spectrumEnvelope;
     private float[] _temp;
     private Point[] _envelopePoints;
     private float _scale = 1f;
@@ -62,7 +61,6 @@ namespace RadioComponents.Visual {
 
       int points = _buffer.Width - 60;
       _spectrumData = new byte[points];
-      _spectrumEnvelope = new float[points];
       _temp = new float[points];
       _spectrumDataMin = new byte[points];
       _envelopePoints = new Point[points + 2];
@@ -104,7 +102,6 @@ namespace RadioComponents.Visual {
         int num = this._buffer.Width - 60;
         int points = _buffer.Width - 60;
         _spectrumData = new byte[points];
-        _spectrumEnvelope = new float[points];
         _temp = new float[points];
         _spectrumDataMin = new byte[points];
         _envelopePoints = new Point[points + 2];
@@ -232,22 +229,20 @@ namespace RadioComponents.Visual {
       }
     }
     private unsafe void updateSpectrum(float* spectrumData, int length, float scale, float offset) {
-      int displayOffset = (_displayOffset / 10) * 10;
-      int displayRange = (_displayRange / 10) * 10;
+      lock (_spectrumData) {
+        int displayOffset = (_displayOffset / 10) * 10;
+        int displayRange = (_displayRange / 10) * 10;
 
-      fixed (float* tempRef = _temp)
-      {
-        fixed (float* smoothedSpectrumEnvelopeRef = _spectrumEnvelope)
+        fixed (float* tempRef = _temp)
         {
           fixed (byte* spectrumDataRef = _spectrumData)
           {
-            FFT.Smooth(spectrumData, tempRef, length, _spectrumEnvelope.Length, scale, offset);
-            Utils.memcpy((void*)smoothedSpectrumEnvelopeRef, (void*)tempRef, _spectrumEnvelope.Length * 4);
-            FFT.Scale(smoothedSpectrumEnvelopeRef, spectrumDataRef, _spectrumEnvelope.Length, (displayOffset - displayRange), displayOffset);
+            FFT.Smooth(spectrumData, tempRef, length, _temp.Length, scale, offset);
+            FFT.Scale(tempRef, spectrumDataRef, _temp.Length, (displayOffset - displayRange), displayOffset);
           }
         }
+        spectrumAvailable = true;
       }
-      spectrumAvailable = true;
     }
     #endregion
     #region Properties

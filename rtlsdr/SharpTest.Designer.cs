@@ -23,6 +23,7 @@
     /// the contents of this method with the code editor.
     /// </summary>
     private void InitializeComponent() {
+      this.components = new System.ComponentModel.Container();
       this.button1 = new System.Windows.Forms.Button();
       this.button2 = new System.Windows.Forms.Button();
       this.trackBar3 = new System.Windows.Forms.TrackBar();
@@ -30,11 +31,13 @@
       this.trackBar5 = new System.Windows.Forms.TrackBar();
       this.label1 = new System.Windows.Forms.Label();
       this.trackBar1 = new System.Windows.Forms.TrackBar();
-      this.spectrumAnalyzer1 = new RadioComponents.Visual.SpectrumAnalyzer();
       this.lnaGain = new System.Windows.Forms.TrackBar();
       this.mixerGain = new System.Windows.Forms.TrackBar();
       this.vgaGain = new System.Windows.Forms.TrackBar();
+      this.checkBox1 = new System.Windows.Forms.CheckBox();
       this.spectrumAnalyzer2 = new RadioComponents.Visual.SpectrumAnalyzer();
+      this.spectrumAnalyzer1 = new RadioComponents.Visual.SpectrumAnalyzer();
+      this.fftTimer = new System.Windows.Forms.Timer(this.components);
       ((System.ComponentModel.ISupportInitialize)(this.trackBar3)).BeginInit();
       ((System.ComponentModel.ISupportInitialize)(this.offsetTrackBar)).BeginInit();
       ((System.ComponentModel.ISupportInitialize)(this.trackBar5)).BeginInit();
@@ -116,20 +119,6 @@
       this.trackBar1.Value = 1;
       this.trackBar1.ValueChanged += new System.EventHandler(this.trackBar1_ValueChanged);
       // 
-      // spectrumAnalyzer1
-      // 
-      this.spectrumAnalyzer1.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
-      this.spectrumAnalyzer1.DisplayOffset = 0;
-      this.spectrumAnalyzer1.DisplayRange = 130;
-      this.spectrumAnalyzer1.Frequency = ((long)(0));
-      this.spectrumAnalyzer1.Location = new System.Drawing.Point(12, 238);
-      this.spectrumAnalyzer1.Name = "spectrumAnalyzer1";
-      this.spectrumAnalyzer1.SampleRate = ((long)(0));
-      this.spectrumAnalyzer1.Size = new System.Drawing.Size(815, 244);
-      this.spectrumAnalyzer1.SpectrumScale = 1F;
-      this.spectrumAnalyzer1.TabIndex = 2;
-      // 
       // lnaGain
       // 
       this.lnaGain.Location = new System.Drawing.Point(651, 12);
@@ -160,6 +149,17 @@
       this.vgaGain.Value = 1;
       this.vgaGain.Scroll += new System.EventHandler(this.vgaGain_Scroll);
       // 
+      // checkBox1
+      // 
+      this.checkBox1.AutoSize = true;
+      this.checkBox1.Location = new System.Drawing.Point(283, 114);
+      this.checkBox1.Name = "checkBox1";
+      this.checkBox1.Size = new System.Drawing.Size(102, 17);
+      this.checkBox1.TabIndex = 14;
+      this.checkBox1.Text = "Enable WIndow";
+      this.checkBox1.UseVisualStyleBackColor = true;
+      this.checkBox1.CheckedChanged += new System.EventHandler(this.checkBox1_CheckedChanged);
+      // 
       // spectrumAnalyzer2
       // 
       this.spectrumAnalyzer2.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left) 
@@ -170,15 +170,35 @@
       this.spectrumAnalyzer2.Location = new System.Drawing.Point(12, 488);
       this.spectrumAnalyzer2.Name = "spectrumAnalyzer2";
       this.spectrumAnalyzer2.SampleRate = ((long)(0));
-      this.spectrumAnalyzer2.Size = new System.Drawing.Size(815, 222);
+      this.spectrumAnalyzer2.Size = new System.Drawing.Size(855, 222);
       this.spectrumAnalyzer2.SpectrumScale = 1F;
       this.spectrumAnalyzer2.TabIndex = 13;
+      // 
+      // spectrumAnalyzer1
+      // 
+      this.spectrumAnalyzer1.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+      this.spectrumAnalyzer1.DisplayOffset = 0;
+      this.spectrumAnalyzer1.DisplayRange = 130;
+      this.spectrumAnalyzer1.Frequency = ((long)(0));
+      this.spectrumAnalyzer1.Location = new System.Drawing.Point(12, 238);
+      this.spectrumAnalyzer1.Name = "spectrumAnalyzer1";
+      this.spectrumAnalyzer1.SampleRate = ((long)(0));
+      this.spectrumAnalyzer1.Size = new System.Drawing.Size(739, 244);
+      this.spectrumAnalyzer1.SpectrumScale = 1F;
+      this.spectrumAnalyzer1.TabIndex = 2;
+      // 
+      // fftTimer
+      // 
+      this.fftTimer.Interval = 25;
+      this.fftTimer.Tick += new System.EventHandler(this.fftTimer_Tick);
       // 
       // SharpTest
       // 
       this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
       this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-      this.ClientSize = new System.Drawing.Size(839, 722);
+      this.ClientSize = new System.Drawing.Size(1445, 722);
+      this.Controls.Add(this.checkBox1);
       this.Controls.Add(this.spectrumAnalyzer2);
       this.Controls.Add(this.vgaGain);
       this.Controls.Add(this.mixerGain);
@@ -220,6 +240,8 @@
     private System.Windows.Forms.TrackBar mixerGain;
     private System.Windows.Forms.TrackBar vgaGain;
     private RadioComponents.Visual.SpectrumAnalyzer spectrumAnalyzer2;
+    private System.Windows.Forms.CheckBox checkBox1;
+    private System.Windows.Forms.Timer fftTimer;
   }
 }
 

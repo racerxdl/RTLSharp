@@ -70,6 +70,7 @@ namespace RTLSharp.Extensions {
         dest[i] = (byte)((val - minPower) * a);
       }
     }
+
     public static unsafe void Smooth(float* srcPtr, float* dstPtr, int sourceLength, int destinationLength, float zoom = 1f, float offset = 0f) {
       zoom = zoom < 1f ? 1f : zoom;
       float zoomTarget = (sourceLength) / (zoom * destinationLength);
@@ -100,6 +101,12 @@ namespace RTLSharp.Extensions {
       for (var i = 0; i < length; i++) {
         float m = buffer[i].real * buffer[i].real + buffer[i].imag * buffer[i].imag;
         power[i] = (float)(10.0 * Math.Log10(1e-60 + m)) + offset;
+      }
+    }
+    public static unsafe void ApplyWindow(Complex* buffer, float* window, int length) {
+      for (var i = 0; i < length; i++) {
+        buffer[i].real *= window[i];
+        buffer[i].imag *= window[i];
       }
     }
     #endregion
@@ -146,6 +153,7 @@ namespace RTLSharp.Extensions {
         }
       }
     }
+
     private static unsafe void ForwardTransformNormal(Complex* buffer, int length) {
       int a;
       Complex cplx;

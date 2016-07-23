@@ -130,7 +130,7 @@ namespace RTLSharp.Types {
       DataBuffer result;
       if (_writePos < BlockSize && _blockBuffer.Count > 0) {
         result = _blockBuffer[_blockBuffer.Count - 1];
-      }  else {
+      } else {
         result = AllocBlock();
         _blockBuffer.Add(result);
         _writePos = 0;

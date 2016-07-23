@@ -35,28 +35,28 @@ namespace RTLSharp.Extensions {
     public static float[] kaiserBesselFilter(float sampleRate, float lowFrequency, float highFrequency, int length, float attenuation = 30) {
       float[] taps = new float[length];
       int Np = (length - 1) / 2;
-      float[] inpRes = new float[Np+1];
-      float[] window = new float[Np+1];
+      float[] inpRes = new float[Np + 1];
+      float[] window = new float[Np + 1];
       float alpha;
 
       if (attenuation > 50) {
         alpha = 0.1102f * (attenuation - 8.7f);
-      } else if (attenuation >= 21 ) {
+      } else if (attenuation >= 21) {
         alpha = (float)(0.5842 * Math.Pow(attenuation - 21, 0.4f) + 0.07886 * (attenuation - 21));
       } else {
         alpha = 0f;
       }
 
       // The filter is symmetric, so we only need to calculate half of it.
-      for (int i=0; i<=Np; i++) {
+      for (int i = 0; i <= Np; i++) {
         // Window
         float i0a = besselI0(alpha);
         float npSq = (float)(i * i / (Np * Np));
-        window[i] = besselI0((float) (alpha * Math.Sqrt(1 - npSq)) ) / i0a;
+        window[i] = besselI0((float)(alpha * Math.Sqrt(1 - npSq))) / i0a;
 
         // Impulse Response
         if (i > 0) {
-          inpRes[i] = (float) ((Math.Sin((2 * i * Math.PI * highFrequency) / sampleRate) - Math.Sin((2 * i * Math.PI * lowFrequency) / sampleRate)) / (i * Math.PI));
+          inpRes[i] = (float)((Math.Sin((2 * i * Math.PI * highFrequency) / sampleRate) - Math.Sin((2 * i * Math.PI * lowFrequency) / sampleRate)) / (i * Math.PI));
         } else {
           inpRes[i] = 2 * (highFrequency - lowFrequency) / sampleRate;
         }
@@ -66,7 +66,7 @@ namespace RTLSharp.Extensions {
       }
 
       // Calculate the other end of the filter
-      for (int i=0; i<Np; i++) {
+      for (int i = 0; i < Np; i++) {
         taps[i] = taps[length - 1 - i];
       }
 
@@ -119,6 +119,15 @@ namespace RTLSharp.Extensions {
       }
 
       return taps;
+    }
+
+    public static float[] generateHammingWindow(int length) {
+      float[] window = new float[length];
+      length--;
+      for (var i = 0; i <= length; i++) {
+        window[i] = 1f * (0.54f - 0.46f * (float)Math.Cos(2.0 * Math.PI * i / length));
+      }
+      return window;
     }
   }
 }
