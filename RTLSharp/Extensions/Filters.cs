@@ -51,7 +51,7 @@ namespace RTLSharp.Extensions {
       for (int i = 0; i <= Np; i++) {
         // Window
         float i0a = besselI0(alpha);
-        float npSq = (float)(i * i / (Np * Np));
+        float npSq = (i * i / (Np * Np));
         window[i] = besselI0((float)(alpha * Math.Sqrt(1 - npSq))) / i0a;
 
         // Impulse Response

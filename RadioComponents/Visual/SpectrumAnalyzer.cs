@@ -46,6 +46,7 @@ namespace RadioComponents.Visual {
     private long _centerFrequency;
     private long _spectrumWidth;
     private LinearGradientBrush _gradientBrush;
+    private string title;
     #endregion
     #region Constructors
     public SpectrumAnalyzer() {
@@ -155,12 +156,14 @@ namespace RadioComponents.Visual {
       Pen pen2 = new Pen(Color.DarkGray);
       Font font = new Font("Arial", 8f);
       SolidBrush brush = new SolidBrush(Color.Silver);
+      SolidBrush brush2 = new SolidBrush(Color.White);
+      Font font2 = new Font("Arial", 9f);
       pen.DashStyle = DashStyle.Dash;
 
       // Draw Vertical
       int position = 10;
       long finalFreqStrSize;
-      string frequencyDisplay = getFrequencyDisplay(this._centerFrequency + ((long)(_spectrumWidth * 0.5f)));
+      string frequencyDisplay = getFrequencyDisplay(_centerFrequency + ((long)(_spectrumWidth * 0.5f)));
       float freqStrSize = graphics.MeasureString(frequencyDisplay, font).Width + 30f;
       long freqStrSize2 = (long)((_buffer.Width - 60) / freqStrSize);
       int i = 2;
@@ -227,6 +230,9 @@ namespace RadioComponents.Visual {
         graphics.DrawLine(pen, 30, 30, 30, _buffer.Height - 30);
         graphics.DrawLine(pen, 30, _buffer.Height - 30, _buffer.Width - 30, _buffer.Height - 30);
       }
+
+      // Draw Title
+      graphics.DrawString(title, font2, brush2, 30, 10);
     }
     private unsafe void updateSpectrum(float* spectrumData, int length, float scale, float offset) {
       lock (_spectrumData) {
@@ -246,6 +252,13 @@ namespace RadioComponents.Visual {
     }
     #endregion
     #region Properties
+    public string Title {
+      get { return title; }
+      set {
+        title = value;
+        updateBackground();
+      }
+    }
     public int DisplayOffset {
       get { return _displayOffset; }
       set {

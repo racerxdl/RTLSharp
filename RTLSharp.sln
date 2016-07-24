@@ -5,7 +5,7 @@ VisualStudioVersion = 14.0.25123.0
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RTLSharp", "RTLSharp\RTLSharp.csproj", "{B6DC209D-1FB4-4A85-AE17-DAAD56B9F70F}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "rtlsharptest", "rtlsdr\rtlsharptest.csproj", "{9DAC113D-5D49-48AA-BC06-3BD994E60ACD}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RTLSharpProg", "rtlsdr\RTLSharpProg.csproj", "{9DAC113D-5D49-48AA-BC06-3BD994E60ACD}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RadioComponents", "RadioComponents\RadioComponents.csproj", "{AE80DDB5-B8B0-4F07-979B-AD3AAFE6F0F9}"
 EndProject

@@ -27,7 +27,7 @@ namespace RTLSharp {
   /// librtlsdr Native Methods
   /// </summary>
   public unsafe class NativeMethods {
-    private const string LibRtlSdr = "librtlsdr\\librtlsdr.dll";
+    private const string LibRtlSdr = "librtlsdr";
     #region Standard Calls
     /// <summary>
     /// Gets the number of available RTLSDR Devices in the USB Bus
