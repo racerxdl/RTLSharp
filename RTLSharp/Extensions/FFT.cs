@@ -24,40 +24,8 @@ namespace RTLSharp.Extensions {
   /// TODO: Rewrite this shitty code.
   /// </summary>
   public static class FFT {
-    #region Constants
-    private const int MAX_LUT_BITS = 16;
-    private const int MAX_LUT_BINS = 1 << MAX_LUT_BITS;
-    private const int LUT_SIZE = MAX_LUT_BINS / 2;
-    private const double TWO_PI = 2.0 * Math.PI;
-    #endregion
-    #region Fields
-    private unsafe static DataBuffer _lutBuffer = DataBuffer.Create(LUT_SIZE, sizeof(Complex));
-    private unsafe static Complex* _lut = ((Complex*)_lutBuffer);
-    #endregion
     #region Methods
-    static unsafe FFT() {
-      for (int i = 0; i < LUT_SIZE; i++) {
-        _lut[i] = Complex.FromAngle(TWO_PI * i / MAX_LUT_BINS).Conjugate();
-      }
-    }
-    public static unsafe void ForwardTransform(Complex* buffer, int length) {
-      if (length <= MAX_LUT_BINS) {
-        ForwardTransformLut(buffer, length);
-      } else {
-        ForwardTransformNormal(buffer, length);
-      }
-    }
-    public static unsafe void InverseTransform(Complex* samples, int length) {
-      for (int i = 0; i < length; i++) {
-        samples[i].imag = -samples[i].imag;
-      }
-      ForwardTransform(samples, length);
-      float a = 1f / length;
-      for (int j = 0; j < length; j++) {
-        samples[j].real *= a;
-        samples[j].imag = -samples[j].imag * a;
-      }
-    }
+ 
     public static unsafe void Scale(float* src, byte* dest, int length, float minPower, float maxPower) {
       float a = 255f / (maxPower - minPower);
       for (int i = 0; i < length; i++) {
@@ -99,7 +67,7 @@ namespace RTLSharp.Extensions {
     }
     public unsafe static void SpectrumPower(Complex* buffer, float* power, int length, float offset) {
       for (var i = 0; i < length; i++) {
-        float m = buffer[i].real * buffer[i].real + buffer[i].imag * buffer[i].imag;
+        float m = (buffer[i].real * buffer[i].real) + (buffer[i].imag * buffer[i].imag);
         power[i] = (float)(10.0 * Math.Log10(1e-60 + m)) + offset;
       }
     }
@@ -107,93 +75,6 @@ namespace RTLSharp.Extensions {
       for (var i = 0; i < length; i++) {
         buffer[i].real *= window[i];
         buffer[i].imag *= window[i];
-      }
-    }
-    #endregion
-    #region Private Methods
-    private static unsafe void ForwardTransformLut(Complex* buffer, int length) {
-      int a;
-      Complex cplx;
-      int b = length - 1;
-      int d = length / 2;
-      int c = 0;
-      for (a = length; a > 1; a = a >> 1) {
-        c++;
-      }
-      int index = d;
-      a = 1;
-      while (a < b) {
-        if (a < index) {
-          cplx = buffer[index];
-          buffer[index] = buffer[a];
-          buffer[a] = cplx;
-        }
-        int e = d;
-        while (e <= index) {
-          index -= e;
-          e /= 2;
-        }
-        index += e;
-        a++;
-      }
-      for (int i = 1; i <= c; i++) {
-        int s = 1 << i;
-        int t = s / 2;
-        int lutPos = MAX_LUT_BITS - i;
-        for (index = 1; index <= t; index++) {
-          int pos = index - 1;
-          Complex complex = _lut[pos << lutPos];
-          for (a = pos; a <= b; a += s) {
-            int v = a + t;
-            cplx = complex * buffer[v];
-            buffer[v] = buffer[a] - cplx;
-            Complex* cPtr = buffer + a;
-            cPtr[0] += cplx;
-          }
-        }
-      }
-    }
-
-    private static unsafe void ForwardTransformNormal(Complex* buffer, int length) {
-      int a;
-      Complex cplx;
-      int b = length - 1;
-      int d = length / 2;
-      int c = 0;
-      for (a = length; a > 1; a = a >> 1) {
-        c++;
-      }
-      int index = d;
-      a = 1;
-      while (a < b) {
-        if (a < index) {
-          cplx = buffer[index];
-          buffer[index] = buffer[a];
-          buffer[a] = cplx;
-        }
-        int e = d;
-        while (e <= index) {
-          index -= e;
-          e /= 2;
-        }
-        index += e;
-        a++;
-      }
-      for (int i = 1; i <= c; i++) {
-        int s = 1 << i;
-        int t = s / 2;
-        double k = Math.PI / t;
-        for (index = 1; index <= t; index++) {
-          int pos = index - 1;
-          Complex complex = Complex.FromAngle(k * pos).Conjugate();
-          for (a = pos; a <= b; a += s) {
-            int v = a + t;
-            cplx = complex * buffer[v];
-            buffer[v] = buffer[a] - cplx;
-            Complex* cPtr = buffer + a;
-            cPtr[0] += cplx;
-          }
-        }
       }
     }
     #endregion

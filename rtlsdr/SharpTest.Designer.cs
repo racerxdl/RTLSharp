@@ -113,7 +113,7 @@
       this.scrollPanel.Controls.Add(this.controlPanel);
       this.scrollPanel.Location = new System.Drawing.Point(12, 66);
       this.scrollPanel.Name = "scrollPanel";
-      this.scrollPanel.Size = new System.Drawing.Size(271, 530);
+      this.scrollPanel.Size = new System.Drawing.Size(271, 531);
       this.scrollPanel.TabIndex = 18;
       // 
       // controlPanel
@@ -280,7 +280,7 @@
       // 
       this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
       this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-      this.ClientSize = new System.Drawing.Size(1091, 600);
+      this.ClientSize = new System.Drawing.Size(1091, 601);
       this.Controls.Add(this.scrollPanel);
       this.Controls.Add(this.panel2);
       this.Controls.Add(this.ifSpectrumAnalizer);

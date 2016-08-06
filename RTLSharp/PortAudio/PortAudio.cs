@@ -28,7 +28,7 @@ namespace RTLSharp.PortAudio {
   /// PortAudio v.19 bindings for .NET
   /// </summary>
   public partial class PortAudio {
-    private const string libPortAudio = "PortAudio\\PortAudio.dll";
+    private const string libPortAudio = "PortAudio";
     #region **** PORTAUDIO CALLBACKS ****
 
     [UnmanagedFunctionPointer(CallingConvention.Cdecl)]

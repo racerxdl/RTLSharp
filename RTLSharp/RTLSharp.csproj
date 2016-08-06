@@ -81,6 +81,10 @@
     <Compile Include="Extensions\Filters.cs" />
     <Compile Include="Extensions\Math.cs" />
     <Compile Include="Extensions\Utils.cs" />
+    <Compile Include="FFTW\FFTW.cs" />
+    <Compile Include="FFTW\FFTWComplex.cs" />
+    <Compile Include="FFTW\NativeFFTW.cs" />
+    <Compile Include="FFTW\SFFT.cs" />
     <Compile Include="Modules\Decimator.cs" />
     <Compile Include="Modules\FloatLPF.cs" />
     <Compile Include="Modules\FMDemodulator.cs" />
@@ -125,11 +129,7 @@
   <ItemGroup>
     <None Include="App.config" />
   </ItemGroup>
-  <ItemGroup>
-    <Content Include="PortAudio\PortAudio.dll">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-  </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

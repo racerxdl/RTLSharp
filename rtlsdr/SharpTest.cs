@@ -3,6 +3,7 @@ using RTLSharp.Extensions;
 using RTLSharp.Modules;
 using RTLSharp.PortAudio;
 using RTLSharp.Types;
+using RTLSharp.fftw;
 using System;
 using System.Collections.Generic;
 using System.Threading;
@@ -45,6 +46,10 @@ namespace rtlsdr {
     private float[] hammingWindow;
     private FloatLPF fmLpf;
     private int audioDeviceIdx = 0;
+
+    private SFFT sFFT;
+    private SFFT sFFTDecimator;
+
     #endregion
     #region Constructor / Destructor
     public unsafe SharpTest() {
@@ -69,7 +74,8 @@ namespace rtlsdr {
           break;
         }
       }
-      updateFrequency((uint) (106.3 * 1000 * 1000));
+      updateFrequency((uint)(106.3 * 1000 * 1000));
+      sFFT = new SFFT(fftBins);
     }
     #endregion
     #region Event Callbacks
@@ -88,7 +94,10 @@ namespace rtlsdr {
         audioDecimator.process(tmpBufferPtr, tmpBufferPtr, e.Length);
         _audioFifo.Write(tmpBufferPtr, (int)(e.Length / audioDecimator.DecimationFactor));
 
-        FFT.ForwardTransform(e.ComplexBuffer, e.Length);
+        sFFTDecimator.updateData(e.ComplexBuffer, e.Length);
+        sFFTDecimator.execute();
+        sFFTDecimator.copyOutput(e.ComplexBuffer, e.Length);
+
         lock (powerBuffer) {
           FFT.SpectrumPower(e.ComplexBuffer, powerDecimatorPtr, e.Length, offset);
         }
@@ -130,6 +139,7 @@ namespace rtlsdr {
       }
       Console.WriteLine("DSP Thread stopped.");
     }
+
     private unsafe void process() {
       if (_fftStream.Length >= fftBins) {
         int samplesRead = _fftStream.Read(fftBufferPtr, fftBins);
@@ -145,7 +155,10 @@ namespace rtlsdr {
             FFT.ApplyWindow(fftBufferPtr, w, samplesRead);
           }
         }
-        FFT.ForwardTransform(fftBufferPtr, samplesRead);
+        sFFT.updateData(fftBufferPtr, samplesRead);
+        sFFT.execute();
+        sFFT.copyOutput(fftBufferPtr, samplesRead);
+
         lock (powerBuffer) {
           FFT.SpectrumPower(fftBufferPtr, powerPtr, samplesRead, offset);
         }
@@ -184,6 +197,8 @@ namespace rtlsdr {
       _audioFifo = new FloatFifo(16 * audioBufferInMs * audioSampleRate / 1000);
       _audioFifo.Open();
       _audioPlayer = new AudioPlayer(audioDeviceIdx, audioSampleRate, (uint)(audioBufferInMs * audioSampleRate / 1000), audioBufferNeeded);
+
+      sFFTDecimator = new SFFT((int)(fftBins / audioDecimator.DecimationFactor));
 
       ifSpectrumAnalizer.Frequency = rtlDevice.Frequency;
       ifSpectrumAnalizer.SampleRate = decimator.OutputSampleRate;

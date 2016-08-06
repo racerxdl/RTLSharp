@@ -149,15 +149,15 @@ namespace RTLSharp.Types {
         }
         Complex* complexPtr = target._iqPtr;
         for (int i = 0; i < length; i++) {
-          buf++;
-          complexPtr->imag = _lut[buf[0]];
-          buf++;
-          complexPtr->real = _lut[buf[0]];
+          complexPtr->real = _lut[*buf++];
+          complexPtr->imag = _lut[*buf++];
           complexPtr++;
         }
         target.complexSamplesAvailableCallback(target._iqPtr, target._buffer.Length);
       }
     }
+
+
     /// <summary>
     /// Starts the working thread
     /// </summary>
