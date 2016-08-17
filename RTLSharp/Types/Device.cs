@@ -107,7 +107,7 @@ namespace RTLSharp.Types {
     /// </summary>
     static Device() {
       for (int i = 0; i < 256; i++) {
-        _lut[i] = (i - 128) * 0.007874016f;
+        _lut[i] = (i - 128) * (1f / 127f);
       }
     }
     /// <summary>
@@ -144,6 +144,7 @@ namespace RTLSharp.Types {
         Device target = (Device)handle.Target;
         int length = (int)(len / 2);
         if ((target._buffer == null) || (target._buffer.Length != length)) {
+          Console.WriteLine("Creating IQ Buffer");
           target._buffer = DataBuffer.Create(length, sizeof(Complex));
           target._iqPtr = (Complex*)target._buffer;
         }

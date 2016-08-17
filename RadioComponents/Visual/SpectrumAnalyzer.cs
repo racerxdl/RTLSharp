@@ -144,9 +144,10 @@ namespace RadioComponents.Visual {
         }
       }
     }
-    private string getFrequencyDisplay(long frequency) {
+    private static string getFrequencyDisplay(long frequency) {
       return string.Format("{0,0000}", frequency / 1e6);
     }
+
     private void updateBackground() {
       Graphics graphics = Graphics.FromImage(_bgBuffer);
       ConfigureGraphics(graphics);

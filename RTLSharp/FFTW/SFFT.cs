@@ -20,28 +20,47 @@ namespace RTLSharp.fftw {
 
     public unsafe void updateData(Complex *c, int length) {
       FFTWComplex* id = (FFTWComplex *)_input;
-      length = length > _bins ? _bins : length;
+      if (length != _bins) {
+        Console.WriteLine("Warning! Reallocing SFFT!");
+        realloc(length);
+      }
       for (int i=0; i<length;i++) {
         id[i].imag = c[i].imag;
         id[i].real = c[i].real;
-      }
-      for (int i=length;i<_bins;i++) {
-        id[i].real = 0;
-        id[i].imag = 0;
       }
     }
 
     public unsafe void copyOutput(Complex *c, int length) {
       FFTWComplex* od = (FFTWComplex*)_output;
-      for (int i = _bins; i < length; i++) {
-        c[i].imag = 0;
-        c[i].real = 0;
+      if (length != _bins) {
+        Console.WriteLine("Warning! Reallocing SFFT!");
+        realloc(length);
       }
-      length = length > _bins ? _bins : length;
-      for (int i=0;i<length;i++) {
-        c[i].imag = (float)od[i].imag;
-        c[i].real = (float)od[i].real;
+      int middle = _bins / 2;
+      // FFTW have DC (Zero-Frequency) at the left corner (od[0]). But the SDR Expects a symmetric FFT with the DC in the center.
+      for (int i=0; i< middle; i++) {
+        // Lower
+        c[i].imag = (float)od[middle + i].imag;
+        c[i].real = (float)od[middle + i].real;
+
+        // Upper
+        c[middle + i].imag = (float)od[i].imag;
+        c[middle + i].real = (float)od[i].real;
       }
+    }
+
+    private void destroy() {
+      NativeFFTW.fftw_destroy_plan(_plan);
+      NativeFFTW.fftw_free(_input);
+      NativeFFTW.fftw_free(_output);
+    }
+
+    private unsafe void realloc(int bins) {
+      destroy();
+      _input = NativeFFTW.fftw_malloc(sizeof(FFTWComplex) * bins);
+      _output = NativeFFTW.fftw_malloc(sizeof(FFTWComplex) * bins);
+      _plan = NativeFFTW.fftw_plan_dft_1d(bins, _input, _output, FFTW.FFTW_FORWARD, FFTW.FFTW_ESTIMATE);
+      _bins = bins;
     }
 
     public void execute() {
@@ -49,9 +68,7 @@ namespace RTLSharp.fftw {
     }
 
     ~SFFT() {
-      NativeFFTW.fftw_destroy_plan(_plan);
-      NativeFFTW.fftw_free(_input);
-      NativeFFTW.fftw_free(_output);
+      destroy();
     }
   }
 }

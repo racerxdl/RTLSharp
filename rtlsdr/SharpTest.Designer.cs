@@ -42,6 +42,7 @@
       this.vgaGain = new System.Windows.Forms.TrackBar();
       this.mixerGain = new System.Windows.Forms.TrackBar();
       this.lnaGain = new System.Windows.Forms.TrackBar();
+      this.textBox1 = new System.Windows.Forms.TextBox();
       this.ifSpectrumAnalizer = new RadioComponents.Visual.SpectrumAnalyzer();
       this.mainSpectrumAnalyzer = new RadioComponents.Visual.SpectrumAnalyzer();
       ((System.ComponentModel.ISupportInitialize)(this.frequencyTrackBar)).BeginInit();
@@ -61,8 +62,8 @@
       // 
       this.frequencyTrackBar.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
-      this.frequencyTrackBar.Location = new System.Drawing.Point(289, 12);
-      this.frequencyTrackBar.Maximum = 12000;
+      this.frequencyTrackBar.Location = new System.Drawing.Point(289, 81);
+      this.frequencyTrackBar.Maximum = 20000;
       this.frequencyTrackBar.Minimum = 8000;
       this.frequencyTrackBar.Name = "frequencyTrackBar";
       this.frequencyTrackBar.Size = new System.Drawing.Size(798, 45);
@@ -113,7 +114,7 @@
       this.scrollPanel.Controls.Add(this.controlPanel);
       this.scrollPanel.Location = new System.Drawing.Point(12, 66);
       this.scrollPanel.Name = "scrollPanel";
-      this.scrollPanel.Size = new System.Drawing.Size(271, 531);
+      this.scrollPanel.Size = new System.Drawing.Size(271, 609);
       this.scrollPanel.TabIndex = 18;
       // 
       // controlPanel
@@ -160,6 +161,7 @@
       this.spectrumScaleBar.Size = new System.Drawing.Size(176, 45);
       this.spectrumScaleBar.TabIndex = 18;
       this.spectrumScaleBar.Value = 1;
+      this.spectrumScaleBar.Scroll += new System.EventHandler(this.spectrumScaleBar_Scroll);
       this.spectrumScaleBar.ValueChanged += new System.EventHandler(this.spectrumScaleBar_ValueChanged);
       // 
       // checkBox1
@@ -246,6 +248,14 @@
       this.lnaGain.Value = 1;
       this.lnaGain.Scroll += new System.EventHandler(this.lnaGain_Scroll);
       // 
+      // textBox1
+      // 
+      this.textBox1.Location = new System.Drawing.Point(411, 23);
+      this.textBox1.Name = "textBox1";
+      this.textBox1.Size = new System.Drawing.Size(131, 20);
+      this.textBox1.TabIndex = 19;
+      this.textBox1.KeyDown += new System.Windows.Forms.KeyEventHandler(this.textBox1_KeyDown);
+      // 
       // ifSpectrumAnalizer
       // 
       this.ifSpectrumAnalizer.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
@@ -253,7 +263,7 @@
       this.ifSpectrumAnalizer.DisplayOffset = 0;
       this.ifSpectrumAnalizer.DisplayRange = 130;
       this.ifSpectrumAnalizer.Frequency = ((long)(0));
-      this.ifSpectrumAnalizer.Location = new System.Drawing.Point(289, 313);
+      this.ifSpectrumAnalizer.Location = new System.Drawing.Point(289, 382);
       this.ifSpectrumAnalizer.Name = "ifSpectrumAnalizer";
       this.ifSpectrumAnalizer.SampleRate = ((long)(0));
       this.ifSpectrumAnalizer.Size = new System.Drawing.Size(798, 283);
@@ -268,7 +278,7 @@
       this.mainSpectrumAnalyzer.DisplayOffset = 0;
       this.mainSpectrumAnalyzer.DisplayRange = 130;
       this.mainSpectrumAnalyzer.Frequency = ((long)(0));
-      this.mainSpectrumAnalyzer.Location = new System.Drawing.Point(289, 63);
+      this.mainSpectrumAnalyzer.Location = new System.Drawing.Point(289, 132);
       this.mainSpectrumAnalyzer.Name = "mainSpectrumAnalyzer";
       this.mainSpectrumAnalyzer.SampleRate = ((long)(0));
       this.mainSpectrumAnalyzer.Size = new System.Drawing.Size(797, 244);
@@ -280,7 +290,8 @@
       // 
       this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
       this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-      this.ClientSize = new System.Drawing.Size(1091, 601);
+      this.ClientSize = new System.Drawing.Size(1091, 679);
+      this.Controls.Add(this.textBox1);
       this.Controls.Add(this.scrollPanel);
       this.Controls.Add(this.panel2);
       this.Controls.Add(this.ifSpectrumAnalizer);
@@ -329,6 +340,7 @@
     private System.Windows.Forms.TrackBar vgaGain;
     private System.Windows.Forms.TrackBar mixerGain;
     private System.Windows.Forms.TrackBar lnaGain;
+    private System.Windows.Forms.TextBox textBox1;
   }
 }
 

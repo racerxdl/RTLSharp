@@ -8,6 +8,7 @@ using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Windows.Forms;
+using RTLSharp;
 
 namespace rtlsdr {
   public partial class SharpTest : Form {
@@ -74,7 +75,7 @@ namespace rtlsdr {
           break;
         }
       }
-      updateFrequency((uint)(106.3 * 1000 * 1000));
+      updateFrequency((uint)(105.7 * 1000 * 1000));
       sFFT = new SFFT(fftBins);
     }
     #endregion
@@ -107,6 +108,8 @@ namespace rtlsdr {
       if (_fftStream.Length < maxIqSamples) {
         if (e.IsComplex) {
           _fftStream.Write(e.ComplexBuffer, e.Length);
+        } else {
+          Console.WriteLine("Weird, the buffer should be Complex");
         }
       } else {
         Console.WriteLine("Buffer is full!");
@@ -155,6 +158,7 @@ namespace rtlsdr {
             FFT.ApplyWindow(fftBufferPtr, w, samplesRead);
           }
         }
+        
         sFFT.updateData(fftBufferPtr, samplesRead);
         sFFT.execute();
         sFFT.copyOutput(fftBufferPtr, samplesRead);
@@ -285,11 +289,25 @@ namespace rtlsdr {
         mainSpectrumAnalyzer.Frequency = frequency;
         ifSpectrumAnalizer.Frequency = frequency;
         mainSpectrumAnalyzer.Title = getMainSpectrumTitle();
+        textBox1.Text = (frequency / 1000).ToString();
       }
     }
     private string getMainSpectrumTitle() {
       return string.Format("Radio Spectrum - {0:0.000} MHz", frequency / 1000000f);
     }
     #endregion
+
+    private void textBox1_KeyDown(object sender, KeyEventArgs e) {
+      if (e.KeyCode == Keys.Enter) {
+        uint val = rtlDevice.Frequency;
+        uint.TryParse(textBox1.Text, out val);
+        val *= 1000;
+        updateFrequency(val);
+      }
+    }
+
+    private void spectrumScaleBar_Scroll(object sender, EventArgs e) {
+
+    }
   }
 }
