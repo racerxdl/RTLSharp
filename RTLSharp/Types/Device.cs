@@ -1,4 +1,7 @@
 ﻿///////////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////////
+
+using RTLSharp.Base.Callbacks;
 ///    C# RTLSDR                                                                ///
 ///    Copyright(C) 2016 Lucas Teske                                            ///
 ///                                                                             ///
@@ -14,14 +17,12 @@
 ///                                                                             ///
 ///    You should have received a copy of the GNU General Public license        ///
 ///    along with this program.If not, see<http://www.gnu.org/licenses/>.       ///
-///////////////////////////////////////////////////////////////////////////////////
-
 using RTLSharp.Callbacks;
 using RTLSharp.Exceptions;
 using System;
 using System.Runtime.InteropServices;
 using System.Threading;
-using static RTLSharp.Callbacks.ManagedCallbacks;
+using static RTLSharp.Base.Callbacks.ManagedCallbacks;
 using static RTLSharp.Callbacks.NativeCallbacks;
 
 namespace RTLSharp.Types {
@@ -182,9 +183,16 @@ namespace RTLSharp.Types {
       if (NativeMethods.rtlsdr_set_tuner_gain_mode(_dev, !_useTunerAGC) != 0) {
         throw new SetParametersException("Cannot set Gain Mode");
       }
+      if (TunerType == TunerType.R820T) {
+        if (NativeMethods.rtlsdr_set_tuner_gain_ext(_dev, _lnaGain, _mixerGain, _vgaGain) != 0) {
+          throw new SetParametersException("Cannot set gains");
+        }
+      } else {
+        // TODO: Set Gains
+      }
 
-      if (NativeMethods.rtlsdr_set_tuner_gain_ext(_dev, _lnaGain, _mixerGain, _vgaGain) != 0) {
-        throw new SetParametersException("Cannot set gains");
+      if (TunerType == TunerType.E4000) {
+        UseOffsetTuning = true;
       }
 
       if (NativeMethods.rtlsdr_reset_buffer(_dev) != 0) {
@@ -211,7 +219,7 @@ namespace RTLSharp.Types {
     /// Refresh the Gains
     /// </summary>
     private void RefreshGains() {
-      if (_dev != IntPtr.Zero) {
+      if (_dev != IntPtr.Zero && TunerType == TunerType.R820T) {
         NativeMethods.rtlsdr_set_tuner_gain_ext(_dev, _lnaGain, _mixerGain, _vgaGain);
       }
     }

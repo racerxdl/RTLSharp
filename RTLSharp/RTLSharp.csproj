@@ -70,9 +70,16 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Callbacks\ManagedCallbacks.cs" />
+    <Compile Include="Audio\Structs\Chunk.cs" />
+    <Compile Include="Audio\Wave.cs" />
+    <Compile Include="Audio\WavePlayer.cs" />
+    <Compile Include="Audio\WaveReader.cs" />
+    <Compile Include="Audio\WaveStream.cs" />
+    <Compile Include="Audio\WavType.cs" />
+    <Compile Include="Base\Frontend.cs" />
+    <Compile Include="Base\Callbacks\ManagedCallbacks.cs" />
     <Compile Include="Callbacks\NativeCallbacks.cs" />
-    <Compile Include="Callbacks\SamplesEventArgs.cs" />
+    <Compile Include="Base\Callbacks\SamplesEventArgs.cs" />
     <Compile Include="Exceptions\DeviceWorkerAlreadyRunning.cs" />
     <Compile Include="Exceptions\InvalidArgumentException.cs" />
     <Compile Include="Exceptions\RTLSharpException.cs" />
@@ -97,6 +104,7 @@
     <Compile Include="PortAudio\AudioDeviceDirection.cs" />
     <Compile Include="PortAudio\AudioPlayer.cs" />
     <Compile Include="PortAudio\PortAudio.cs" />
+    <Compile Include="RTL\RTLFrontend.cs" />
     <Compile Include="Types\FloatFifo.cs" />
     <Compile Include="NativeMethods.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

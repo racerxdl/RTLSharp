@@ -3,19 +3,23 @@ using RTLSharp.Extensions;
 using RTLSharp.Modules;
 using RTLSharp.PortAudio;
 using RTLSharp.Types;
-using RTLSharp.fftw;
 using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Windows.Forms;
 using RTLSharp;
+using RTLSharp.FFTW;
+using RTLSharp.Audio;
+using RTLSharp.Base.Callbacks;
+using RTLSharp.Base;
+using RTLSharp.RTL;
 
 namespace rtlsdr {
   public partial class SharpTest : Form {
     #region Fields
     private int maxIqSamples = 16 * 1024;
     private uint frequency;
-    private Device rtlDevice;
+    private Frontend frontend;
     private DataBuffer powerBuffer;
     private DataBuffer powerBufferDecimator;
     private DataBuffer fftBuffer;
@@ -37,7 +41,7 @@ namespace rtlsdr {
     private volatile bool dspHit = true;
 
     private int audioSampleRate = 192000;
-    private int audioBufferInMs = 100;
+    private int audioBufferInMs = 200;
 
     private FMDemodulator fmDemod;
     private int decimatorRatio = 8;
@@ -55,6 +59,7 @@ namespace rtlsdr {
     #region Constructor / Destructor
     public unsafe SharpTest() {
       InitializeComponent();
+
       powerBuffer = DataBuffer.Create(fftBins, sizeof(float));
       powerBufferDecimator = DataBuffer.Create(fftBins, sizeof(float));
       fftBuffer = DataBuffer.Create(fftBins, sizeof(Complex));
@@ -179,22 +184,22 @@ namespace rtlsdr {
     #endregion
     #region Component Methods
     private unsafe void startButtonClick(object sender, EventArgs e) {
-      rtlDevice = new Device(0);
-      rtlDevice.Frequency = frequency;
-      rtlDevice.SamplesAvailable += D_SamplesAvailable;
-      mainSpectrumAnalyzer.Frequency = rtlDevice.Frequency;
-      mainSpectrumAnalyzer.SampleRate = rtlDevice.SampleRate;
+      frontend = new RTLFrontend(new Device(0));
+      frontend.Frequency = frequency;
+      frontend.SamplesAvailable += D_SamplesAvailable;
+      updateFrequency(frontend.Frequency);
+      mainSpectrumAnalyzer.SampleRate = frontend.SampleRate;
 
-      maxIqSamples = (int)(audioBufferInMs * rtlDevice.SampleRate / 1000);
+      maxIqSamples = (int)(audioBufferInMs * frontend.SampleRate / 1000);
 
       _fftStream = new ComplexFifo(maxIqSamples);
       _fftStreamDecimator = new ComplexFifo(maxIqSamples);
       _fftStream.Open();
       _fftStreamDecimator.Open();
 
-      decimator = new Decimator(rtlDevice.SampleRate, (uint)decimatorRatio, (uint)fftBins);
-      audioDecimator = new InlineFloatDecimator(rtlDevice.SampleRate / decimatorRatio, (uint)decimatorRatio);
-      audioSampleRate = (int)((rtlDevice.SampleRate / decimatorRatio) / decimatorRatio);
+      decimator = new Decimator(frontend.SampleRate, (uint)decimatorRatio, (uint)fftBins);
+      audioDecimator = new InlineFloatDecimator(frontend.SampleRate / decimatorRatio, (uint)decimatorRatio);
+      audioSampleRate = (int)((frontend.SampleRate / decimatorRatio) / decimatorRatio);
       audioBuffer = DataBuffer.Create((audioBufferInMs * audioSampleRate / 1000), sizeof(float));
       audioPtr = (float*)audioBuffer;
       fmLpf = new FloatLPF(audioSampleRate, 22050, 127);
@@ -204,15 +209,21 @@ namespace rtlsdr {
 
       sFFTDecimator = new SFFT((int)(fftBins / audioDecimator.DecimationFactor));
 
-      ifSpectrumAnalizer.Frequency = rtlDevice.Frequency;
+      ifSpectrumAnalizer.Frequency = frontend.Frequency;
       ifSpectrumAnalizer.SampleRate = decimator.OutputSampleRate;
       decimator.SamplesAvailable += Decimator_SamplesAvailable;
-      rtlDevice.UseRtlAGC = false;
-      rtlDevice.UseTunerAGC = false;
-      rtlDevice.VGAGain = vgaGain.Value = 3;
-      rtlDevice.LNAGain = lnaGain.Value = 7;
-      rtlDevice.MixerGain = mixerGain.Value = 3;
-      rtlDevice.Start();
+
+      if (typeof(RTLFrontend).IsAssignableFrom(frontend.GetType())) {
+        RTLFrontend f = (RTLFrontend)frontend;
+        f.Device.UseRtlAGC = false;
+        f.Device.UseTunerAGC = false;
+        f.Device.VGAGain = vgaGain.Value = 3;
+        f.Device.LNAGain = lnaGain.Value = 7;
+        f.Device.MixerGain = mixerGain.Value = 3;
+      }
+
+      frontend.Start();
+
       dspHit = true;
       _dspThread = new Thread(dspWork);
       _dspThread.Start();
@@ -223,23 +234,23 @@ namespace rtlsdr {
       Console.WriteLine("Receiving Samples now.");
     }
     private void stopButtonClick(object sender, EventArgs e) {
-      if (rtlDevice != null) {
+      if (frontend != null) {
         _fftStream.Close();
         _fftStreamDecimator.Close();
         dspHit = false;
-        rtlDevice.Stop();
-        rtlDevice = null;
+        frontend.Stop();
+        frontend = null;
         Console.WriteLine("Stopped Receiving Samples now.");
         startButton.Enabled = true;
         stopButton.Enabled = false;
       }
     }
     private void Form1_FormClosing(object sender, FormClosingEventArgs e) {
-      if (rtlDevice != null) {
+      if (frontend != null) {
         _fftStream.Close();
         _fftStreamDecimator.Close();
         dspHit = false;
-        rtlDevice.Stop();
+        frontend.Stop();
       }
     }
     private void spectrumScaleBar_ValueChanged(object sender, EventArgs e) {
@@ -255,18 +266,21 @@ namespace rtlsdr {
       ifSpectrumAnalizer.DisplayRange = displayRangeBar.Value;
     }
     private void lnaGain_Scroll(object sender, EventArgs e) {
-      if (rtlDevice != null) {
-        rtlDevice.LNAGain = lnaGain.Value;
+      if (frontend != null && typeof(RTLFrontend).IsAssignableFrom(frontend.GetType())) {
+        RTLFrontend f = (RTLFrontend)frontend;
+        f.Device.LNAGain = lnaGain.Value;
       }
     }
     private void mixerGain_Scroll(object sender, EventArgs e) {
-      if (rtlDevice != null) {
-        rtlDevice.MixerGain = mixerGain.Value;
+      if (frontend != null && typeof(RTLFrontend).IsAssignableFrom(frontend.GetType())) {
+        RTLFrontend f = (RTLFrontend)frontend;
+        f.Device.MixerGain = mixerGain.Value;
       }
     }
     private void vgaGain_Scroll(object sender, EventArgs e) {
-      if (rtlDevice != null) {
-        rtlDevice.VGAGain = vgaGain.Value;
+      if (frontend != null && typeof(RTLFrontend).IsAssignableFrom(frontend.GetType())) {
+        RTLFrontend f = (RTLFrontend)frontend;
+        f.Device.VGAGain = vgaGain.Value;
       }
     }
     private void frequencyTrackBar_ValueChanged(object sender, EventArgs e) {
@@ -280,9 +294,9 @@ namespace rtlsdr {
     private void updateFrequency(uint newFreq) {
       if (newFreq != frequency) {
         frequency = newFreq;
-        if (rtlDevice != null) {
-          rtlDevice.Frequency = frequency;
-          frequency = rtlDevice.Frequency;
+        if (frontend != null) {
+          frontend.Frequency = frequency;
+          frequency = frontend.Frequency;
         }
 
         frequencyTrackBar.Value = (int)(frequency / 10000);
@@ -299,7 +313,7 @@ namespace rtlsdr {
 
     private void textBox1_KeyDown(object sender, KeyEventArgs e) {
       if (e.KeyCode == Keys.Enter) {
-        uint val = rtlDevice.Frequency;
+        uint val = frontend.Frequency;
         uint.TryParse(textBox1.Text, out val);
         val *= 1000;
         updateFrequency(val);

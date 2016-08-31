@@ -19,7 +19,7 @@
 using RTLSharp.Types;
 using System;
 
-namespace RTLSharp.Callbacks {
+namespace RTLSharp.Base.Callbacks {
   /// <summary>
   /// SamplesAvailable Event Argument
   /// </summary>

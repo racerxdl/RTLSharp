@@ -1,4 +1,7 @@
 ﻿///////////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////////
+
+using RTLSharp.Base.Callbacks;
 ///    C# RTLSDR                                                                ///
 ///    Copyright(C) 2016 Lucas Teske                                            ///
 ///                                                                             ///
@@ -14,14 +17,11 @@
 ///                                                                             ///
 ///    You should have received a copy of the GNU General Public license        ///
 ///    along with this program.If not, see<http://www.gnu.org/licenses/>.       ///
-///////////////////////////////////////////////////////////////////////////////////
-
 using RTLSharp.Exceptions;
 using RTLSharp.Extensions;
 using RTLSharp.Types;
 using System;
-using RTLSharp.Callbacks;
-using static RTLSharp.Callbacks.ManagedCallbacks;
+using static RTLSharp.Base.Callbacks.ManagedCallbacks;
 
 namespace RTLSharp.Modules {
   /// <summary>

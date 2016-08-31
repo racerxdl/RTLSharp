@@ -16,7 +16,7 @@
 ///    along with this program.If not, see<http://www.gnu.org/licenses/>.       ///
 ///////////////////////////////////////////////////////////////////////////////////
 
-namespace RTLSharp.Callbacks {
+namespace RTLSharp.Base.Callbacks {
   public class ManagedCallbacks {
     public delegate void SamplesAvailableEvent(SamplesEventArgs e);
   }

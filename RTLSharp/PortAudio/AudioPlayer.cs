@@ -1,4 +1,7 @@
 ﻿///////////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////////
+
+using RTLSharp.Base.Callbacks;
 ///    C# RTLSDR                                                                ///
 ///    Copyright(C) 2016 Lucas Teske                                            ///
 ///                                                                             ///
@@ -14,12 +17,10 @@
 ///                                                                             ///
 ///    You should have received a copy of the GNU General Public license        ///
 ///    along with this program.If not, see<http://www.gnu.org/licenses/>.       ///
-///////////////////////////////////////////////////////////////////////////////////
-
 using RTLSharp.Callbacks;
 using System;
 using System.Runtime.InteropServices;
-using static RTLSharp.Callbacks.ManagedCallbacks;
+using static RTLSharp.Base.Callbacks.ManagedCallbacks;
 using static RTLSharp.PortAudio.PortAudio;
 
 namespace RTLSharp.PortAudio {
