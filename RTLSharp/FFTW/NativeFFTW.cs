@@ -1,11 +1,7 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Runtime.InteropServices;
-using System.Text;
-using System.Threading.Tasks;
 
-namespace RTLSharp.fftw {
+namespace RTLSharp.FFTW {
   public class NativeFFTW {
 
     private const string LibFFTW = "libfftw3-3";

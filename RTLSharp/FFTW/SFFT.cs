@@ -1,11 +1,7 @@
 ﻿using RTLSharp.Types;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
-namespace RTLSharp.fftw {
+namespace RTLSharp.FFTW {
   public class SFFT {
     private IntPtr _input;
     private IntPtr _output;

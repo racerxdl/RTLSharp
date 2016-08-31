@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace RTLSharp.fftw {
+﻿namespace RTLSharp.FFTW {
   public class FFTW {
     public const int FFTW_FORWARD = (-1);
     public const int FFTW_BACKWARD = (+1);
